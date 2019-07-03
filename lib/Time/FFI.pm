@@ -194,7 +194,7 @@ function is used if available.
 
 Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
 (defaulting to the current time) in the local time zone. The thread-safe
-L<localtime(3)> function is used if available.
+L<localtime_r(3)> function is used if available.
 
 =head2 mktime
 
