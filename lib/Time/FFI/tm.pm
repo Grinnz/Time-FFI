@@ -16,8 +16,7 @@ record_layout(
 
 sub from_list {
   my ($class, @args) = @_;
-  my %attr;
-  $attr{$tm_members[$_]} = $args[$_] for 0..$#tm_members;
+  my %attr = map { ($tm_members[$_] => $args[$_]) } 0..$#tm_members;
   return $class->new(\%attr);
 }
 

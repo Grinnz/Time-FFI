@@ -32,7 +32,7 @@ handling.
 
 =head1 FUNCTIONS
 
-All functions are exported on demand, or with the C<:all> export tag.
+All functions are exported individually, or with the C<:all> export tag.
 
 =head2 asctime
 
