@@ -24,9 +24,11 @@ core functions of the same name, as well as those exported by L<Time::Piece>,
 so you may wish to call them as e.g. C<Time::FFI::gmtime> rather than importing
 them.
 
-All functions will throw an exception containing the syscall error message in
-the event of an error. L<perlvar/$!> will also have been set by the syscall, so
-you could check it after trapping the exception for finer exception handling.
+All functions will throw an exception in the event of an error. For functions
+other than L</strftime> and L</strptime>, this exception will contain the
+syscall error message, and L<perlvar/$!> will also have been set by the
+syscall, so you could check it after trapping the exception for finer exception
+handling.
 
 =head1 FUNCTIONS
 
