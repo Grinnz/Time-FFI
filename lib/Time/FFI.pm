@@ -165,7 +165,8 @@ All functions are exported on demand, or with the C<:all> export tag.
   my $str = asctime $tm;
 
 Returns a string in the format C<Wed Jun 30 21:49:08 1993\n> representing the
-passed L<Time::FFI::tm> record.
+passed L<Time::FFI::tm> record. The thread-safe L<asctime_r(3)> function is
+used if available.
 
 =head2 ctime
 
@@ -174,6 +175,8 @@ passed L<Time::FFI::tm> record.
 
 Returns a string in the format C<Wed Jun 30 21:49:08 1993\n> representing the
 passed epoch timestamp (defaulting to the current time) in the local time zone.
+This is equivalent to L<POSIX/ctime> but uses the thread-safe L<ctime_r(3)>
+function if available.
 
 =head2 gmtime
 
@@ -181,7 +184,8 @@ passed epoch timestamp (defaulting to the current time) in the local time zone.
   my $tm = gmtime;
 
 Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
-(defaulting to the current time) in UTC.
+(defaulting to the current time) in UTC. The thread-safe L<gmtime_r(3)>
+function is used if available.
 
 =head2 localtime
 
@@ -189,7 +193,8 @@ Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
   my $tm = localtime;
 
 Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
-(defaulting to the current time) in the local time zone.
+(defaulting to the current time) in the local time zone. The thread-safe
+L<localtime(3)> function is used if available.
 
 =head2 mktime
 
