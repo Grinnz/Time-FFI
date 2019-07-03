@@ -119,7 +119,7 @@ $ffi->attach(strptime => ['string', 'string', 'tm'] => 'string' => sub {
   my ($xsub, $str, $format, $tm, $remaining) = @_;
   $tm = Time::FFI::tm->new unless defined $tm;
   my $rc = $xsub->($str, $format, $tm);
-  croak "$!" unless defined $rc;
+  croak "strptime: Failed to match input to format string" unless defined $rc;
   $$remaining = $rc if defined $remaining;
   return $tm;
 });
