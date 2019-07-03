@@ -23,14 +23,14 @@ if (defined $ffi->find_symbol('asctime_r')) {
     my ($xsub, $tm) = @_;
     my $rc = $xsub->($tm, my $buf = calloc(26, $char_size));
     free $buf;
-    croak "$!" unless defined $rc;
+    croak "asctime: $!" unless defined $rc;
     return $rc;
   });
 } else {
   $ffi->attach(asctime => ['tm'] => 'string' => sub {
     my ($xsub, $tm) = @_;
     my $rc = $xsub->($tm);
-    croak "$!" unless defined $rc;
+    croak "asctime: $!" unless defined $rc;
     return $rc;
   });
 }
@@ -41,7 +41,7 @@ if (defined $ffi->find_symbol('ctime_r')) {
     $time = time unless defined $time;
     my $rc = $xsub->(\$time, my $buf = calloc(26, $char_size));
     free $buf;
-    croak "$!" unless defined $rc;
+    croak "ctime: $!" unless defined $rc;
     return $rc;
   });
 } else {
@@ -49,7 +49,7 @@ if (defined $ffi->find_symbol('ctime_r')) {
     my ($xsub, $time) = @_;
     $time = time unless defined $time;
     my $rc = $xsub->(\$time);
-    croak "$!" unless defined $rc;
+    croak "ctime: $!" unless defined $rc;
     return $rc;
   });
 }
@@ -59,7 +59,7 @@ if (defined $ffi->find_symbol('gmtime_r')) {
     my ($xsub, $time) = @_;
     $time = time unless defined $time;
     my $rc = $xsub->(\$time, my $tm = Time::FFI::tm->new);
-    croak "$!" unless defined $rc;
+    croak "gmtime: $!" unless defined $rc;
     return $tm;
   });
 } else {
@@ -67,7 +67,7 @@ if (defined $ffi->find_symbol('gmtime_r')) {
     my ($xsub, $time) = @_;
     $time = time unless defined $time;
     my $rc = $xsub->(\$time);
-    croak "$!" unless defined $rc;
+    croak "gmtime: $!" unless defined $rc;
     return $rc;
   });
 }
@@ -77,7 +77,7 @@ if (defined $ffi->find_symbol('localtime_r')) {
     my ($xsub, $time) = @_;
     $time = time unless defined $time;
     my $rc = $xsub->(\$time, my $tm = Time::FFI::tm->new);
-    croak "$!" unless defined $rc;
+    croak "localtime: $!" unless defined $rc;
     return $tm;
   });
 } else {
@@ -85,7 +85,7 @@ if (defined $ffi->find_symbol('localtime_r')) {
     my ($xsub, $time) = @_;
     $time = time unless defined $time;
     my $rc = $xsub->(\$time);
-    croak "$!" unless defined $rc;
+    croak "localtime: $!" unless defined $rc;
     return $rc;
   });
 }
@@ -93,7 +93,7 @@ if (defined $ffi->find_symbol('localtime_r')) {
 $ffi->attach(mktime => ['tm'] => 'time_t' => sub {
   my ($xsub, $tm) = @_;
   my $rc = $xsub->($tm);
-  croak "$!" if $rc == -1;
+  croak "mktime: $!" if $rc == -1;
   return $rc;
 });
 
