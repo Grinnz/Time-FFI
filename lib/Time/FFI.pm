@@ -158,14 +158,14 @@ you could check it after trapping the exception for finer exception handling.
 
 All functions are exported on demand, or with the C<:all> export tag.
 
-=head1 asctime
+=head2 asctime
 
   my $str = asctime $tm;
 
 Returns a string in the format C<Wed Jun 30 21:49:08 1993\n> representing the
 passed L<Time::FFI::tm> record.
 
-=head1 ctime
+=head2 ctime
 
   my $str = ctime $epoch;
   my $str = ctime;
@@ -173,7 +173,7 @@ passed L<Time::FFI::tm> record.
 Returns a string in the format C<Wed Jun 30 21:49:08 1993\n> representing the
 passed epoch timestamp (defaulting to the current time) in the local time zone.
 
-=head1 gmtime
+=head2 gmtime
 
   my $tm = gmtime $epoch;
   my $tm = gmtime;
@@ -181,7 +181,7 @@ passed epoch timestamp (defaulting to the current time) in the local time zone.
 Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
 (defaulting to the current time) in UTC.
 
-=head1 localtime
+=head2 localtime
 
   my $tm = localtime $epoch;
   my $tm = localtime;
@@ -189,14 +189,14 @@ Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
 Returns a L<Time::FFI::tm> record representing the passed epoch timestamp
 (defaulting to the current time) in the local time zone.
 
-=head1 mktime
+=head2 mktime
 
   my $epoch = mktime $tm;
 
 Returns the epoch timestamp representing the passed L<Time::FFI::tm> record
 interpreted in the local time zone.
 
-=head1 strftime
+=head2 strftime
 
   my $str = strftime $format, $tm;
 
@@ -204,7 +204,7 @@ Returns a string formatted according to the passed format string, representing
 the passed L<Time::FFI::tm> record. Consult your system's L<strftime(3)> manual
 for available format descriptors.
 
-=head1 strptime
+=head2 strptime
 
   my $tm = strptime $str, $format;
      $tm = strptime $str, $format, $tm;
