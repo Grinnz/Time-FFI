@@ -128,7 +128,7 @@ $ffi->attach(strptime => ['string', 'string', 'tm'] => 'string' => sub {
 
 =head1 NAME
 
-Time::FFI - Date and time transformation functions via libffi
+Time::FFI - libffi interface to POSIX date and time functions
 
 =head1 SYNOPSIS
 
