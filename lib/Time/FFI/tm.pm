@@ -8,7 +8,11 @@ our $VERSION = '0.001';
 
 my @tm_members = qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year tm_wday tm_yday tm_isdst);
 
-record_layout(map { (int => $_) } @tm_members);
+record_layout(
+  (map { (int => $_) } @tm_members),
+  'long'      => 'tm_gmtoff',
+  'string ro' => 'tm_zone',
+);
 
 sub from_list {
   my ($class, @args) = @_;
@@ -70,7 +74,12 @@ functions such as L<mktime(3)> and L<strptime(3)>.
 
 =head2 tm_isdst
 
+=head2 tm_gmtoff
+
+=head2 tm_zone
+
 The integer components of the C<tm> struct are stored as settable attributes.
+The C<tm_zone> attribute is read-only.
 
 =head1 METHODS
 
