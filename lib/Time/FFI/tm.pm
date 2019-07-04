@@ -2,7 +2,10 @@ package Time::FFI::tm;
 
 use strict;
 use warnings;
+use Carp 'croak';
 use FFI::Platypus::Record;
+use Module::Runtime 'require_module';
+use Time::Local;
 
 our $VERSION = '0.001';
 
@@ -23,6 +26,47 @@ sub from_list {
 sub to_list {
   my ($self) = @_;
   return map { $self->$_ } @tm_members;
+}
+
+sub to_object {
+  my ($self, $class, $islocal) = @_;
+  require_module $class;
+  require Time::FFI;
+  if ($class->isa('Time::Piece')) {
+    if ($islocal) {
+      my $epoch = Time::FFI::mktime $self;
+      return $class->localtime($epoch);
+    } else {
+      my $year = $self->tm_year;
+      $year += 1900 if $year >= 0; # avoid timegm year heuristic
+      my $epoch = timegm((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
+      return $class->gmtime($epoch);
+    }
+  } elsif ($class->isa('Time::Moment')) {
+    my $moment = $class->new(
+      year   => $self->tm_year + 1900,
+      month  => $self->tm_mon + 1,
+      day    => $self->tm_mday,
+      hour   => $self->tm_hour,
+      minute => $self->tm_min,
+      second => $self->tm_sec,
+    );
+    return $moment unless $islocal;
+    my $epoch = Time::FFI::mktime $self;
+    return $moment->with_offset_same_local(($moment->epoch - $epoch) / 60);
+  } elsif ($class->isa('DateTime')) {
+    return $class->new(
+      year   => $self->tm_year + 1900,
+      month  => $self->tm_mon + 1,
+      day    => $self->tm_mday,
+      hour   => $self->tm_hour,
+      minute => $self->tm_min,
+      second => $self->tm_sec,
+      time_zone => $islocal ? 'local' : 'UTC',
+    );
+  } else {
+    croak "Cannot convert to unrecognized object class $class";
+  }
 }
 
 1;
@@ -47,6 +91,8 @@ Time::FFI::tm - POSIX tm record structure
   my $tm = Time::FFI::tm->from_list(CORE::localtime(time));
 
   my $epoch = POSIX::mktime($tm->to_list);
+
+  my $datetime = $tm->to_object('DateTime', 1);
 
 =head1 DESCRIPTION
 
@@ -104,6 +150,17 @@ same order returned by L<perlfunc/localtime>.
 
 Return the list of values in the structure, in the same order returned by
 L<perlfunc/localtime>.
+
+=head2 to_object
+
+  my $piece    = $tm->to_object('Time::Piece', $islocal);
+  my $moment   = $tm->to_object('Time::Moment', $islocal);
+  my $datetime = $tm->to_object('DateTime', $islocal);
+
+Return an object of the specified class. If a true value is passed as the
+second argument, the time will be interpreted in the local time zone; otherwise
+it will be interpreted as UTC. Currently L<Time::Piece>, L<Time::Moment>, and
+L<DateTime> (or subclasses) are recognized.
 
 =head1 BUGS
 

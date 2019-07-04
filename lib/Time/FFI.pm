@@ -133,10 +133,16 @@ Time::FFI - libffi interface to POSIX date and time functions
 
   use Time::FFI qw(localtime mktime strptime strftime);
 
-  my $tm = localtime time;
   my $tm = strptime '1995-01-02 13:15:39', '%Y-%m-%d %H:%M:%S';
   my $epoch = mktime $tm;
   print "$epoch: ", strftime('%I:%M:%S %p on %B %e, %Y', $tm);
+  my $piece = $tm->to_object('Time::Piece', 1);
+
+  my $tm = localtime time;
+  my $datetime = $tm->to_object('DateTime', 1);
+
+  my $tm = gmtime time;
+  my $moment = $tm->to_object('Time::Moment', 0);
 
 =head1 DESCRIPTION
 
