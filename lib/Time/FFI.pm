@@ -134,9 +134,9 @@ Time::FFI - libffi interface to POSIX date and time functions
   use Time::FFI qw(localtime mktime strptime strftime);
 
   my $tm = localtime time;
-  my $epoch = mktime $tm;
   my $tm = strptime '1995-01-02 13:15:39', '%Y-%m-%d %H:%M:%S';
-  print strftime '%I:%M:%S %p on %B %e, %Y', $tm;
+  my $epoch = mktime $tm;
+  print "$epoch: ", strftime('%I:%M:%S %p on %B %e, %Y', $tm);
 
 =head1 DESCRIPTION
 
