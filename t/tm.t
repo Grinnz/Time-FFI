@@ -9,7 +9,7 @@ my $tm = Time::FFI::tm->new;
 is $tm, object { call $_ => 0 for @tm_members }, 'base tm struct';
 
 my $time = time;
-my @localtime = localtime $time;
+my @localtime = CORE::localtime $time;
 
 $tm = Time::FFI::tm->new(map { ($tm_members[$_] => $localtime[$_]) } 0..$#tm_members);
 is $tm, object { call $tm_members[$_] => $localtime[$_] for 0..$#tm_members }, 'populated tm struct';
