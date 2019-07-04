@@ -104,8 +104,7 @@ $ffi->attach(strftime => ['opaque', 'size_t', 'string', 'tm'] => 'size_t' => sub
   my $rc = 0;
   my $buf;
   until ($rc != 0) {
-    free $buf if defined $buf;
-    $rc = $xsub->($buf = calloc($buf_size, $char_size), $buf_size, $format, $tm);
+    $rc = $xsub->($buf = realloc($buf, $buf_size * $char_size), $buf_size, $format, $tm);
     last if $buf_size > $max_size;
   } continue {
     $buf_size *= 2;
@@ -133,7 +132,6 @@ Time::FFI - libffi interface to POSIX date and time functions
 =head1 SYNOPSIS
 
   use Time::FFI qw(localtime mktime strptime strftime);
-  use Time::FFI::tm;
 
   my $tm = localtime time;
   my $epoch = mktime $tm;

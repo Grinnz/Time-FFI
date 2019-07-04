@@ -7,7 +7,6 @@ Time::FFI - libffi interface to POSIX date and time functions
 =head1 SYNOPSIS
 
   use Time::FFI qw(localtime mktime strptime strftime);
-  use Time::FFI::tm;
 
   my $tm = localtime time;
   my $epoch = mktime $tm;

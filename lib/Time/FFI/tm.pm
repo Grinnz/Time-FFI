@@ -10,8 +10,8 @@ my @tm_members = qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year tm_wday tm_yday
 
 record_layout(
   (map { (int => $_) } @tm_members),
-  'long'      => 'tm_gmtoff',
-  'string ro' => 'tm_zone',
+  long   => 'tm_gmtoff',
+  string => 'tm_zone',
 );
 
 sub from_list {
@@ -29,7 +29,7 @@ sub to_list {
 
 =head1 NAME
 
-Time::FFI::tm - POSIX tm structure
+Time::FFI::tm - POSIX tm record structure
 
 =head1 SYNOPSIS
 
@@ -44,14 +44,14 @@ Time::FFI::tm - POSIX tm structure
     tm_sec  => 59,
   );
 
-  my $tm = Time::FFI::tm->from_list(localtime(time));
+  my $tm = Time::FFI::tm->from_list(CORE::localtime(time));
 
   my $epoch = POSIX::mktime($tm->to_list);
 
 =head1 DESCRIPTION
 
-This L<FFI::Platypus::Record> class represents a time structure as used by
-functions such as L<mktime(3)> and L<strptime(3)>.
+This L<FFI::Platypus::Record> class represents the C<tm> struct defined by
+F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>.
 
 =head1 ATTRIBUTES
 
@@ -77,8 +77,9 @@ functions such as L<mktime(3)> and L<strptime(3)>.
 
 =head2 tm_zone
 
-The integer components of the C<tm> struct are stored as settable attributes.
-The C<tm_zone> attribute is read-only.
+The integer components of the C<tm> struct are stored as settable attributes
+that default to 0. The C<tm_gmtoff> and C<tm_zone> attributes may not be
+available on all systems. The C<tm_zone> attribute is a read-only string.
 
 =head1 METHODS
 
