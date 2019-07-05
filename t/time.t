@@ -45,14 +45,15 @@ is mktime($local_tm), $time, 'mktime returns original epoch';
 is strftime('%Y', $utc_tm), $utc_list[5] + 1900, 'strftime return year';
 is strftime('%H:%M:%S', $local_tm), sprintf('%02d:%02d:%02d', @local_list[2,1,0]), 'strftime returns right time';
 
-my $tm = strptime('2300', '%Y');
-is $tm->tm_year, 400, 'strptime extract year';
-strptime('10-01', '%m-%d', $tm);
-is $tm->tm_year, 400, 'year unchanged';
-is $tm->tm_mon, 9, 'strptime extract month';
-is $tm->tm_mday, 1, 'strptime extract day of month';
-strptime('5abc', '%H', $tm, \my $remaining);
-is $tm->tm_hour, 5, 'strptime extract hour';
-is $remaining, 'abc', 'unparsed input string';
+SKIP: { skip "strptime not available" unless defined &strptime;
+  my $tm = strptime('2300', '%Y');
+  is $tm->tm_year, 400, 'strptime extract year';
+  strptime('10-01', '%m-%d', $tm);
+  is $tm->tm_mon, 9, 'strptime extract month';
+  is $tm->tm_mday, 1, 'strptime extract day of month';
+  strptime('5abc', '%H', $tm, \my $remaining);
+  is $tm->tm_hour, 5, 'strptime extract hour';
+  is $remaining, 'abc', 'unparsed input string';
+}
 
 done_testing;

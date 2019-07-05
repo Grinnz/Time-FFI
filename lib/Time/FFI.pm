@@ -232,6 +232,8 @@ elements which were parsed from the string. Additionally, an optional scalar
 reference may be passed as the fourth argument, in which case it will be set to
 the remaining unprocessed characters of the input string if any.
 
+This function is usually not available on Windows.
+
 =head1 BUGS
 
 Report any issues on the public bugtracker.
