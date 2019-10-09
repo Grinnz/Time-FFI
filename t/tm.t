@@ -19,4 +19,30 @@ is $tm, object { call $tm_members[$_] => $localtime[$_] for 0..$#tm_members }, '
 
 is [$tm->to_list], \@localtime, 'tm struct to list';
 
+$tm = Time::FFI::tm->new(
+  tm_year  => 119,
+  tm_mon   => 5,
+  tm_mday  => 20,
+  tm_hour  => 5,
+  tm_min   => 0,
+  tm_sec   => 0,
+  tm_wday  => -1,
+  tm_yday  => -1,
+  tm_isdst => -1,
+);
+my $local_tm = $tm->with_extra(1);
+is $tm->tm_wday,  -1, 'original tm wday unchanged';
+is $tm->tm_yday,  -1, 'original tm yday unchanged';
+is $tm->tm_isdst, -1, 'original tm isdst unchanged';
+isnt $local_tm->tm_wday,  -1, 'new tm yday set';
+isnt $local_tm->tm_yday,  -1, 'new tm wday set';
+isnt $local_tm->tm_isdst, -1, 'new tm isdst set';
+my $utc_tm = $tm->with_extra(0);
+is $tm->tm_wday,  -1, 'original tm wday unchanged';
+is $tm->tm_yday,  -1, 'original tm yday unchanged';
+is $tm->tm_isdst, -1, 'original tm isdst unchanged';
+isnt $utc_tm->tm_wday, -1, 'new tm yday set';
+isnt $utc_tm->tm_yday, -1, 'new tm wday set';
+is $utc_tm->tm_isdst,   0, 'new tm isdst set';
+
 done_testing;

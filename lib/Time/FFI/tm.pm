@@ -70,6 +70,23 @@ sub to_object {
   }
 }
 
+sub with_extra {
+  my ($self, $islocal) = @_;
+  require Time::FFI;
+  if ($islocal) {
+    my %attr = map { ($_ => $self->$_) } qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year);
+    $attr{tm_isdst} = -1;
+    my $new = (ref $self)->new(\%attr);
+    Time::FFI::mktime($new);
+    return $new;
+  } else {
+    my $year = $self->tm_year;
+    $year += 1900 if $year >= 0; # avoid timegm year heuristic
+    my $epoch = timegm((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
+    return Time::FFI::gmtime($epoch);
+  }
+}
+
 1;
 
 =head1 NAME
@@ -89,6 +106,9 @@ Time::FFI::tm - POSIX tm record structure
     tm_sec   => 59,
     tm_isdst => -1, # allow DST status to be determined by the system
   );
+
+  my $in_local = $tm->with_extra(1);
+  say $in_local->tm_isdst; # now knows if DST is active
 
   my $tm = Time::FFI::tm->from_list(CORE::localtime(time));
 
@@ -163,9 +183,19 @@ L<perlfunc/localtime>.
   my $datetime = $tm->to_object('DateTime', $islocal);
 
 Return an object of the specified class. If a true value is passed as the
-second argument, the time will be interpreted in the local time zone; otherwise
-it will be interpreted as UTC. Currently L<Time::Piece>, L<Time::Moment>, and
-L<DateTime> (or subclasses) are recognized.
+second argument, the object will represent the time interpreted in the local
+time zone; otherwise it will be interpreted in UTC. Currently L<Time::Piece>,
+L<Time::Moment>, and L<DateTime> (or subclasses) are recognized.
+
+=head2 with_extra
+
+  my $new = $tm->with_extra($islocal);
+
+Return a new B<Time::FFI::tm> object with the same time components, but with
+C<tm_wday>, C<tm_yday>, C<tm_isdst>, and (if supported) C<tm_gmtoff> and
+C<tm_zone> set appropriately. If a true value is passed, these values will be
+set according to the time interpreted in the local time zone; otherwise they
+will be set according to the time interpreted in UTC.
 
 =head1 BUGS
 
