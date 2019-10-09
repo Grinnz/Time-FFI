@@ -1,4 +1,12 @@
 {{$NEXT}}
+  - Fixed bugs in Time::FFI::tm->to_object where the tm object may be mutated
+    and the results may be incorrect when interpreted in the local time zone.
+  - Documented that the tm_mday and tm_isdst members of a new Time::FFI::tm
+    record should be set explicitly.
+  - Documented that mktime adjusts the tm_isdst, tm_wday, tm_yday, and possibly
+    tm_gmtoff and tm_zone members of the passed tm record.
+  - Initialize tm_mday to 1 and tm_isdst to -1 in the tm record returned by
+    strptime, rather than the defaults of 0.
 
 0.002     2019-07-05 12:42:42 EDT
   - Skip strptime tests when the function is not provided by the system
