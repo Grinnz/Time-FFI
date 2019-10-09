@@ -66,6 +66,12 @@ is strftime('%H:%M:%S', $local_tm), sprintf('%02d:%02d:%02d', @local_list[2,1,0]
 SKIP: { skip "strptime not available" unless defined &strptime;
   my $tm = strptime('2300', '%Y');
   is $tm->tm_year, 400, 'strptime extract year';
+  is $tm->tm_mon, 0, 'strptime default month';
+  is $tm->tm_mday, 1, 'strptime default day of month';
+  is $tm->tm_hour, 0, 'strptime default hour';
+  is $tm->tm_min, 0, 'strptime default minute';
+  is $tm->tm_sec, 0, 'strptime default second';
+  is $tm->tm_isdst, -1, 'strptime DST undetermined';
   strptime('10-01', '%m-%d', $tm);
   is $tm->tm_mon, 9, 'strptime extract month';
   is $tm->tm_mday, 1, 'strptime extract day of month';

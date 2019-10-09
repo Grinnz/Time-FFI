@@ -31,14 +31,13 @@ sub to_list {
 sub to_object {
   my ($self, $class, $islocal) = @_;
   require_module $class;
-  require Time::FFI;
   if ($class->isa('Time::Piece')) {
+    my $year = $self->tm_year;
+    $year += 1900 if $year >= 0; # avoid timelocal/timegm year heuristic
     if ($islocal) {
-      my $epoch = Time::FFI::mktime $self;
+      my $epoch = timelocal((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
       return $class->localtime($epoch);
     } else {
-      my $year = $self->tm_year;
-      $year += 1900 if $year >= 0; # avoid timegm year heuristic
       my $epoch = timegm((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
       return $class->gmtime($epoch);
     }
@@ -52,7 +51,9 @@ sub to_object {
       second => $self->tm_sec,
     );
     return $moment unless $islocal;
-    my $epoch = Time::FFI::mktime $self;
+    my $year = $self->tm_year;
+    $year += 1900 if $year >= 0; # avoid timelocal year heuristic
+    my $epoch = timelocal((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
     return $moment->with_offset_same_local(($moment->epoch - $epoch) / 60);
   } elsif ($class->isa('DateTime')) {
     return $class->new(
@@ -80,12 +81,13 @@ Time::FFI::tm - POSIX tm record structure
   use Time::FFI::tm;
 
   my $tm = Time::FFI::tm->new(
-    tm_year => 95, # years since 1900
-    tm_mon  => 0,  # 0 == January
-    tm_mday => 1,
-    tm_hour => 13,
-    tm_min  => 25,
-    tm_sec  => 59,
+    tm_year  => 95, # years since 1900
+    tm_mon   => 0,  # 0 == January
+    tm_mday  => 1,
+    tm_hour  => 13,
+    tm_min   => 25,
+    tm_sec   => 59,
+    tm_isdst => -1, # allow DST status to be determined by the system
   );
 
   my $tm = Time::FFI::tm->from_list(CORE::localtime(time));
@@ -124,7 +126,9 @@ F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>.
 =head2 tm_zone
 
 The integer components of the C<tm> struct are stored as settable attributes
-that default to 0. The C<tm_gmtoff> and C<tm_zone> attributes may not be
+that default to 0. Note that 0 is out of range for the C<tm_mday> value, and
+C<tm_isdst> should be set to -1 if unknown, so these values should always be
+specified explicitly. The C<tm_gmtoff> and C<tm_zone> attributes may not be
 available on all systems. The C<tm_zone> attribute is a read-only string.
 
 =head1 METHODS
@@ -142,7 +146,8 @@ Construct a new B<Time::FFI::tm> object representing a C<tm> struct.
   my $tm = Time::FFI::tm->from_list($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst);
 
 Construct a new B<Time::FFI::tm> object from the passed list of values, in the
-same order returned by L<perlfunc/localtime>.
+same order returned by L<perlfunc/localtime>. Missing or undefined values will
+be interpreted as the default of 0, but see L</ATTRIBUTES>.
 
 =head2 to_list
 
