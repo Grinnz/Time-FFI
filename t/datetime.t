@@ -38,4 +38,24 @@ is $utc_dt, object {
   call epoch  => $time;
 }, 'UTC DateTime object';
 
+my $dst_tm = Time::FFI::tm->new(
+  tm_year => 119,
+  tm_mon  => 5,
+  tm_mday => 20,
+  tm_hour => 5,
+  tm_min  => 0,
+  tm_sec  => 0,
+);
+my $dst_dt = $dst_tm->to_object('DateTime', 1);
+my $real_dt = DateTime->new(
+  year   => 2019,
+  month  => 6,
+  day    => 20,
+  hour   => 5,
+  minute => 0,
+  second => 0,
+  time_zone => 'local',
+);
+is $dst_dt->epoch, $real_dt->epoch, '(possible) DST interpreted correctly';
+
 done_testing;

@@ -38,4 +38,16 @@ is $utc_tp, object {
   call epoch => $time;
 }, 'UTC Time::Piece object';
 
+my $dst_tm = Time::FFI::tm->new(
+  tm_year => 119,
+  tm_mon  => 5,
+  tm_mday => 20,
+  tm_hour => 5,
+  tm_min  => 0,
+  tm_sec  => 0,
+);
+my $dst_tp = $dst_tm->to_object('Time::Piece', 1);
+my $real_tp = Time::Piece::localtime->strptime('2019-06-20 05:00:00', '%Y-%m-%d %H:%M:%S');
+is $dst_tp->epoch, $real_tp->epoch, '(possible) DST interpreted correctly';
+
 done_testing;

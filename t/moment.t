@@ -38,4 +38,27 @@ is $utc_mt, object {
   call epoch  => $time;
 }, 'UTC Time::Moment object';
 
+subtest dst_check => sub {
+  test_needs 'Role::Tiny', 'Time::Moment::Role::TimeZone';
+
+  my $dst_tm = Time::FFI::tm->new(
+    tm_year => 119,
+    tm_mon  => 5,
+    tm_mday => 20,
+    tm_hour => 5,
+    tm_min  => 0,
+    tm_sec  => 0,
+  );
+  my $dst_mt = $dst_tm->to_object('Time::Moment', 1);
+  my $real_mt = Role::Tiny->create_class_with_roles('Time::Moment', 'Time::Moment::Role::TimeZone')->new(
+    year   => 2019,
+    month  => 6,
+    day    => 20,
+    hour   => 5,
+    minute => 0,
+    second => 0,
+  )->with_system_offset_same_local;
+  is $dst_mt->epoch, $real_mt->epoch, '(possible) DST interpreted correctly';
+};
+
 done_testing;
