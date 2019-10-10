@@ -51,9 +51,7 @@ sub to_object {
       minute => $self->tm_min,
       second => $self->tm_sec,
     );
-    return $moment unless $islocal;
-    my $epoch = $self->epoch(1);
-    return $moment->with_offset_same_local(($moment->epoch - $epoch) / 60);
+    return $islocal ? $moment->with_offset_same_local(($moment->epoch - $self->epoch(1)) / 60) : $moment;
   } elsif ($class->isa('DateTime')) {
     return $class->new(
       year   => $self->tm_year + 1900,
