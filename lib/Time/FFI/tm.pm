@@ -123,7 +123,7 @@ Time::FFI::tm - POSIX tm record structure
     tm_sec   => 59,
     tm_isdst => -1, # allow DST status to be determined by the system
   );
-  $tm->mday($tm->mday + 1); # add a day
+  $tm->tm_mday($tm->tm_mday + 1); # add a day
 
   my $in_local = $tm->normalized(1);
   say $in_local->tm_isdst; # now knows if DST is active
