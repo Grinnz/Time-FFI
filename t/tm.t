@@ -43,14 +43,14 @@ $tm = Time::FFI::tm->new(
   tm_yday  => -1,
   tm_isdst => -1,
 );
-my $local_tm = $tm->with_extra(1);
+my $local_tm = $tm->normalized(1);
 is $tm->tm_wday,  -1, 'original tm wday unchanged';
 is $tm->tm_yday,  -1, 'original tm yday unchanged';
 is $tm->tm_isdst, -1, 'original tm isdst unchanged';
 isnt $local_tm->tm_wday,  -1, 'new tm yday set';
 isnt $local_tm->tm_yday,  -1, 'new tm wday set';
 isnt $local_tm->tm_isdst, -1, 'new tm isdst set';
-my $utc_tm = $tm->with_extra(0);
+my $utc_tm = $tm->normalized(0);
 is $tm->tm_wday,  -1, 'original tm wday unchanged';
 is $tm->tm_yday,  -1, 'original tm yday unchanged';
 is $tm->tm_isdst, -1, 'original tm isdst unchanged';
