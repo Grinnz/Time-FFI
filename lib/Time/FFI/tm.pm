@@ -220,6 +220,8 @@ be interpreted as the default of 0, but see L</ATTRIBUTES>.
 
   my $tm = Time::FFI::tm->from_object($obj, $islocal);
 
+I<Since version 1.001>
+
 Construct a new B<Time::FFI::tm> object from the passed datetime object, which
 may be any object that implements an C<epoch> method returning the Unix epoch
 timestamp. If a true value is passed as the second argument, the resulting
@@ -252,6 +254,8 @@ accepted; this is not currently supported for UTC times.
 
   my $epoch = $tm->epoch($islocal);
 
+I<Since version 1.000>
+
 Translate the time structure into a Unix epoch timestamp (seconds since
 1970-01-01 UTC). If a true value is passed, the timestamp will represent the
 time as interpreted in the local time zone; otherwise it will be interpreted as
@@ -263,6 +267,8 @@ accepted; this is not currently supported for UTC times.
 =head2 normalized
 
   my $new = $tm->normalized($islocal);
+
+I<Since version 1.003>
 
 Return a new B<Time::FFI::tm> object representing the same time, but with
 C<tm_wday>, C<tm_yday>, C<tm_isdst>, and (if supported) C<tm_gmtoff> and
