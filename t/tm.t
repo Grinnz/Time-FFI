@@ -9,15 +9,28 @@ my $tm = Time::FFI::tm->new;
 is $tm, object { call $_ => 0 for @tm_members }, 'base tm struct';
 
 my $time = time;
+
 my @localtime = CORE::localtime $time;
 
 $tm = Time::FFI::tm->new(map { ($tm_members[$_] => $localtime[$_]) } 0..$#tm_members);
 is $tm, object { call $tm_members[$_] => $localtime[$_] for 0..$#tm_members }, 'populated tm struct';
+is $tm->epoch(1), $time, 'epoch from tm struct';
 
 $tm = Time::FFI::tm->from_list(@localtime);
 is $tm, object { call $tm_members[$_] => $localtime[$_] for 0..$#tm_members }, 'populated tm struct from list';
-
+is $tm->epoch(1), $time, 'epoch from tm struct';
 is [$tm->to_list], \@localtime, 'tm struct to list';
+
+my @gmtime = CORE::gmtime $time;
+
+$tm = Time::FFI::tm->new(map { ($tm_members[$_] => $gmtime[$_]) } 0..$#tm_members);
+is $tm, object { call $tm_members[$_] => $gmtime[$_] for 0..$#tm_members }, 'populated tm struct';
+is $tm->epoch(0), $time, 'epoch from tm struct';
+
+$tm = Time::FFI::tm->from_list(@gmtime);
+is $tm, object { call $tm_members[$_] => $gmtime[$_] for 0..$#tm_members }, 'populated tm struct from list';
+is $tm->epoch(0), $time, 'epoch from tm struct';
+is [$tm->to_list], \@gmtime, 'tm struct to list';
 
 $tm = Time::FFI::tm->new(
   tm_year  => 119,

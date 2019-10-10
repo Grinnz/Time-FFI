@@ -2,20 +2,28 @@ package Time::FFI::tm;
 
 use strict;
 use warnings;
-use Carp 'croak';
-use FFI::Platypus::Record;
-use Module::Runtime 'require_module';
-use Time::Local;
+use Carp ();
+use FFI::Platypus::Record ();
+use Module::Runtime ();
+use Time::Local ();
 
 our $VERSION = '0.003';
 
 my @tm_members = qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year tm_wday tm_yday tm_isdst);
 
-record_layout(
+FFI::Platypus::Record::record_layout(
   (map { (int => $_) } @tm_members),
   long   => 'tm_gmtoff',
   string => 'tm_zone',
 );
+
+sub epoch {
+  my ($self, $islocal) = @_;
+  my $year = $self->tm_year;
+  $year += 1900 if $year >= 0; # avoid timelocal/timegm year heuristic
+  my @vals = ((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
+  return $islocal ? scalar Time::Local::timelocal(@vals) : scalar Time::Local::timegm(@vals);
+}
 
 sub from_list {
   my ($class, @args) = @_;
@@ -30,17 +38,10 @@ sub to_list {
 
 sub to_object {
   my ($self, $class, $islocal) = @_;
-  require_module $class;
+  Module::Runtime::require_module $class;
   if ($class->isa('Time::Piece')) {
-    my $year = $self->tm_year;
-    $year += 1900 if $year >= 0; # avoid timelocal/timegm year heuristic
-    if ($islocal) {
-      my $epoch = timelocal((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
-      return $class->localtime($epoch);
-    } else {
-      my $epoch = timegm((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
-      return $class->gmtime($epoch);
-    }
+    my $epoch = $self->epoch($islocal);
+    return $islocal ? scalar $class->localtime($epoch) : scalar $class->gmtime($epoch);
   } elsif ($class->isa('Time::Moment')) {
     my $moment = $class->new(
       year   => $self->tm_year + 1900,
@@ -51,9 +52,7 @@ sub to_object {
       second => $self->tm_sec,
     );
     return $moment unless $islocal;
-    my $year = $self->tm_year;
-    $year += 1900 if $year >= 0; # avoid timelocal year heuristic
-    my $epoch = timelocal((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
+    my $epoch = $self->epoch(1);
     return $moment->with_offset_same_local(($moment->epoch - $epoch) / 60);
   } elsif ($class->isa('DateTime')) {
     return $class->new(
@@ -66,7 +65,7 @@ sub to_object {
       time_zone => $islocal ? 'local' : 'UTC',
     );
   } else {
-    croak "Cannot convert to unrecognized object class $class";
+    Carp::croak "Cannot convert to unrecognized object class $class";
   }
 }
 
@@ -80,10 +79,7 @@ sub with_extra {
     Time::FFI::mktime($new);
     return $new;
   } else {
-    my $year = $self->tm_year;
-    $year += 1900 if $year >= 0; # avoid timegm year heuristic
-    my $epoch = timegm((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
-    return Time::FFI::gmtime($epoch);
+    return Time::FFI::gmtime($self->epoch(0));
   }
 }
 
@@ -113,13 +109,18 @@ Time::FFI::tm - POSIX tm record structure
   my $tm = Time::FFI::tm->from_list(CORE::localtime(time));
 
   my $epoch = POSIX::mktime($tm->to_list);
+  my $epoch = $tm->epoch(1);
 
   my $datetime = $tm->to_object('DateTime', 1);
 
 =head1 DESCRIPTION
 
 This L<FFI::Platypus::Record> class represents the C<tm> struct defined by
-F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>.
+F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>. This
+is used by L<Time::FFI> to provide access to such structures.
+
+The structure does not store an explicit time zone, so you must specify whether
+to interpret it as local or UTC time whenever rendering it to an actual time.
 
 =head1 ATTRIBUTES
 
@@ -147,9 +148,10 @@ F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>.
 
 The integer components of the C<tm> struct are stored as settable attributes
 that default to 0. Note that 0 is out of range for the C<tm_mday> value, and
-C<tm_isdst> should be set to -1 if unknown, so these values should always be
-specified explicitly. The C<tm_gmtoff> and C<tm_zone> attributes may not be
-available on all systems. The C<tm_zone> attribute is a read-only string.
+C<tm_isdst> should be set to a negative value if unknown, so these values
+should always be specified explicitly. The C<tm_gmtoff> and C<tm_zone>
+attributes may not be available on all systems. The C<tm_zone> attribute is a
+read-only string.
 
 =head1 METHODS
 
@@ -160,6 +162,15 @@ available on all systems. The C<tm_zone> attribute is a read-only string.
   my $tm = Time::FFI::tm->new({tm_year => $year, ...});
 
 Construct a new B<Time::FFI::tm> object representing a C<tm> struct.
+
+=head2 epoch
+
+  my $epoch = $tm->epoch($islocal);
+
+Translate the time structure into a Unix epoch timestamp (seconds since
+1970-01-01 UTC). If a true value is passed, the timestamp will represent the
+time as interpreted in the local time zone; otherwise it will be interpreted as
+UTC.
 
 =head2 from_list
 
@@ -183,8 +194,8 @@ L<perlfunc/localtime>.
   my $datetime = $tm->to_object('DateTime', $islocal);
 
 Return an object of the specified class. If a true value is passed as the
-second argument, the object will represent the time interpreted in the local
-time zone; otherwise it will be interpreted in UTC. Currently L<Time::Piece>,
+second argument, the object will represent the time as interpreted in the local
+time zone; otherwise it will be interpreted as UTC. Currently L<Time::Piece>,
 L<Time::Moment>, and L<DateTime> (or subclasses) are recognized.
 
 =head2 with_extra
@@ -194,8 +205,9 @@ L<Time::Moment>, and L<DateTime> (or subclasses) are recognized.
 Return a new B<Time::FFI::tm> object with the same time components, but with
 C<tm_wday>, C<tm_yday>, C<tm_isdst>, and (if supported) C<tm_gmtoff> and
 C<tm_zone> set appropriately. If a true value is passed, these values will be
-set according to the time interpreted in the local time zone; otherwise they
-will be set according to the time interpreted in UTC.
+set according to the time as interpreted in the local time zone; otherwise they
+will be set according to the time as interpreted in UTC. Note that this does
+not replace the need to pass C<$islocal> for future conversions.
 
 =head1 BUGS
 

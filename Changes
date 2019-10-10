@@ -7,6 +7,8 @@
     tm_gmtoff and tm_zone members of the passed tm record.
   - Initialize tm_mday to 1 and tm_isdst to -1 in the tm record returned by
     strptime, rather than the defaults of 0.
+  - Added epoch method to Time::FFI::tm to return the associated Unix epoch
+    timestamp.
   - Added with_extra method to Time::FFI::tm to return a new tm record with
     extra values populated.
 
