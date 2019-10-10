@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+1.004     2019-10-10 18:27:29 EDT
   - Default tm_mday to 0 in strptime for consistency with other fields on
     Solaris.
 
