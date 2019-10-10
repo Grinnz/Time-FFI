@@ -121,6 +121,19 @@ the remaining unprocessed characters of the input string if any.
 
 This function is usually not available on Windows.
 
+=head2 timegm
+
+  my $epoch = timegm $tm;
+
+Like L</mktime>, but interprets the passed L<Time::FFI::tm> record as UTC. This
+function is not always available.
+
+=head2 timelocal
+
+  my $epoch = timelocal $tm;
+
+The same as L</mktime>, but not always available.
+
 =head1 BUGS
 
 Report any issues on the public bugtracker.
