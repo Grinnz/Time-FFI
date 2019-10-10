@@ -124,12 +124,16 @@ This function is usually not available on Windows.
 
   my $epoch = timegm $tm;
 
+I<Since version 1.002>
+
 Like L</mktime>, but interprets the passed L<Time::FFI::tm> record as UTC. This
 function is not always available.
 
 =head2 timelocal
 
   my $epoch = timelocal $tm;
+
+I<Since version 1.002>
 
 The same as L</mktime>, but not always available.
 
