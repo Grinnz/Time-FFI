@@ -188,7 +188,7 @@ Day of year [0,365].
 
 =head2 tm_isdst
 
-Daylight Savings flag.
+Daylight Savings flag. (0: off, positive: on, negative: unknown)
 
 =head2 tm_gmtoff
 
