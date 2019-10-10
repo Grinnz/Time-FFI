@@ -1,4 +1,6 @@
 {{$NEXT}}
+  - Default tm_mday to 0 in strptime for consistency with other fields on
+    Solaris.
 
 1.003     2019-10-10 17:33:23 EDT
   - Clarify that mktime may adjust any elements of the passed tm record.
