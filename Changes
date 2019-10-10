@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+1.000     2019-10-10 12:19:57 EDT
   - Fixed bugs in Time::FFI::tm->to_object where the tm object may be mutated
     and the results may be incorrect when interpreted in the local time zone.
   - Documented that the tm_mday and tm_isdst members of a new Time::FFI::tm
