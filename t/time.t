@@ -48,14 +48,16 @@ my $dst_tm = Time::FFI::tm->new(
   tm_mon   => 5,
   tm_mday  => 20,
   tm_hour  => 5,
-  tm_min   => 0,
+  tm_min   => -5,
   tm_sec   => 0,
   tm_wday  => -1,
   tm_yday  => -1,
   tm_isdst => -1,
 );
-my $dst_epoch = Time::Local::timelocal(0, 0, 5, 20, 5, 2019);
+my $dst_epoch = Time::Local::timelocal(0, 55, 4, 20, 5, 2019);
 is mktime($dst_tm), $dst_epoch, 'mktime returns (possibly) DST epoch';
+is $dst_tm->tm_hour, 4, 'hour normalized';
+is $dst_tm->tm_min, 55, 'minute normalized';
 cmp_ok $dst_tm->tm_isdst, '>=', 0, 'isdst set';
 cmp_ok $dst_tm->tm_wday,  '>=', 0, 'wday set';
 cmp_ok $dst_tm->tm_yday,  '>=', 0, 'yday set';
