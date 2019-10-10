@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+1.002     2019-10-10 16:17:27 EDT
   - Added timelocal and timegm functions where available.
 
 1.001     2019-10-10 13:58:11 EDT
