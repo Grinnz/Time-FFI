@@ -9,7 +9,7 @@ use FFI::Platypus::Buffer;
 use FFI::Platypus::Memory;
 use Time::FFI::tm;
 
-our $VERSION = '1.000';
+our $VERSION = '1.001';
 
 our @EXPORT_OK = qw(asctime ctime gmtime localtime mktime strftime strptime);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);

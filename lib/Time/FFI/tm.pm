@@ -7,7 +7,7 @@ use FFI::Platypus::Record ();
 use Module::Runtime ();
 use Time::Local ();
 
-our $VERSION = '1.000';
+our $VERSION = '1.001';
 
 my @tm_members = qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year tm_wday tm_yday tm_isdst);
 
