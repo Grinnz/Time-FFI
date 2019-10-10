@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test2::V0;
 use Time::FFI ':all';
-use Time::Local;
+use Time::Local ();
 
 my $time = time;
 my @local_list = CORE::localtime $time;
@@ -54,7 +54,7 @@ my $dst_tm = Time::FFI::tm->new(
   tm_yday  => -1,
   tm_isdst => -1,
 );
-my $dst_epoch = timelocal(0, 0, 5, 20, 5, 2019);
+my $dst_epoch = Time::Local::timelocal(0, 0, 5, 20, 5, 2019);
 is mktime($dst_tm), $dst_epoch, 'mktime returns (possibly) DST epoch';
 cmp_ok $dst_tm->tm_isdst, '>=', 0, 'isdst set';
 cmp_ok $dst_tm->tm_wday,  '>=', 0, 'wday set';
@@ -78,6 +78,14 @@ SKIP: { skip "strptime not available" unless defined &strptime;
   strptime('5abc', '%H', $tm, \my $remaining);
   is $tm->tm_hour, 5, 'strptime extract hour';
   is $remaining, 'abc', 'unparsed input string';
+}
+
+SKIP: { skip "timelocal and timegm not available" unless defined &timelocal and defined &timegm;
+  my $epoch = timelocal $local_tm;
+  is $epoch, $time, 'timelocal returns original epoch';
+
+  $epoch = timegm $utc_tm;
+  is $epoch, $time, 'timegm returns original epoch';
 }
 
 done_testing;

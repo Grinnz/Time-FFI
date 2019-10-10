@@ -11,7 +11,7 @@ use Time::FFI::tm;
 
 our $VERSION = '1.002';
 
-our @EXPORT_OK = qw(asctime ctime gmtime localtime mktime strftime strptime);
+our @EXPORT_OK = qw(asctime ctime gmtime localtime mktime strftime strptime timegm timelocal);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 my $ffi = FFI::Platypus->new(lib => [undef], ignore_not_found => 1);
@@ -121,6 +121,20 @@ $ffi->attach(strptime => ['string', 'string', 'tm'] => 'string' => sub {
   croak "strptime: Failed to match input to format string" unless defined $rc;
   $$remaining = $rc if defined $remaining;
   return $tm;
+});
+
+$ffi->attach(timegm => ['tm'] => 'time_t' => sub {
+  my ($xsub, $tm) = @_;
+  my $rc = $xsub->($tm);
+  croak "timegm: $!" if $rc == -1;
+  return $rc;
+});
+
+$ffi->attach(timelocal => ['tm'] => 'time_t' => sub {
+  my ($xsub, $tm) = @_;
+  my $rc = $xsub->($tm);
+  croak "timelocal: $!" if $rc == -1;
+  return $rc;
 });
 
 1;
@@ -245,6 +259,19 @@ reference may be passed as the fourth argument, in which case it will be set to
 the remaining unprocessed characters of the input string if any.
 
 This function is usually not available on Windows.
+
+=head2 timegm
+
+  my $epoch = timegm $tm;
+
+Like L</mktime>, but interprets the passed L<Time::FFI::tm> record as UTC. This
+function is not always available.
+
+=head2 timelocal
+
+  my $epoch = timelocal $tm;
+
+The same as L</mktime>, but not always available.
 
 =head1 BUGS
 
