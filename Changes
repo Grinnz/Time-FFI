@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+1.001     2019-10-10 13:58:11 EDT
   - Added from_object constructor for Time::FFI::tm.
 
 1.000     2019-10-10 12:19:57 EDT
