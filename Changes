@@ -1,9 +1,11 @@
 {{$NEXT}}
+
+1.003     2019-10-10 17:33:23 EDT
   - Clarify that mktime may adjust any elements of the passed tm record.
-  - Renamed with_extra to normalized and clarify that it also normalizes
-    out-of-range values, but this is not supported when normalizing as UTC.
-  - Allow epoch and to_object methods to accept out-of-range values when
-    interpreted as local time, but this is also not supported as UTC.
+  - Renamed with_extra method for Time::FFI::tm to normalized and clarify that
+    it also normalizes out-of-range values when interpreting as local time.
+  - Allow epoch and to_object methods for Time::FFI::tm to normalize
+    out-of-range values when interpreting as local time.
 
 1.002     2019-10-10 16:17:27 EDT
   - Added timelocal and timegm functions where available.
