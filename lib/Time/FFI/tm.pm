@@ -111,6 +111,7 @@ Time::FFI::tm - POSIX tm record structure
     tm_sec   => 59,
     tm_isdst => -1, # allow DST status to be determined by the system
   );
+  $tm->mday($tm->mday + 1); # add a day
 
   my $in_local = $tm->with_extra(1);
   say $in_local->tm_isdst; # now knows if DST is active
@@ -135,34 +136,55 @@ date/time.
 
 =head1 ATTRIBUTES
 
+The integer components of the C<tm> struct are stored as settable attributes
+that default to 0. Note that 0 is out of the standard range for the C<tm_mday>
+value (often indicating the last day of the previous month), and C<tm_isdst>
+should be set to a negative value if unknown, so these values should always be
+specified explicitly.
+
 =head2 tm_sec
+
+Seconds [0,60].
 
 =head2 tm_min
 
+Minutes [0,59].
+
 =head2 tm_hour
+
+Hour [0,23].
 
 =head2 tm_mday
 
+Day of month [1,31].
+
 =head2 tm_mon
+
+Month of year [0,11].
 
 =head2 tm_year
 
+Years since 1900.
+
 =head2 tm_wday
+
+Day of week [0,6] (Sunday =0).
 
 =head2 tm_yday
 
+Day of year [0,365].
+
 =head2 tm_isdst
+
+Daylight Savings flag.
 
 =head2 tm_gmtoff
 
+Seconds east of UTC. (May not be available on all systems)
+
 =head2 tm_zone
 
-The integer components of the C<tm> struct are stored as settable attributes
-that default to 0. Note that 0 is out of range for the C<tm_mday> value, and
-C<tm_isdst> should be set to a negative value if unknown, so these values
-should always be specified explicitly. The C<tm_gmtoff> and C<tm_zone>
-attributes may not be available on all systems. The C<tm_zone> attribute is a
-read-only string.
+Timezone abbreviation. (Read only string, may not be available on all systems)
 
 =head1 METHODS
 
