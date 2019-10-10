@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Added from_object constructor for Time::FFI::tm.
 
 1.000     2019-10-10 12:19:57 EDT
   - Fixed bugs in Time::FFI::tm->to_object where the tm object may be mutated

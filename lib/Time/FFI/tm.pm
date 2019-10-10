@@ -31,6 +31,17 @@ sub from_list {
   return $class->new(\%attr);
 }
 
+sub from_object {
+  my ($class, $obj, $islocal) = @_;
+  require Time::FFI;
+  if ($obj->can('epoch')) {
+    return $islocal ? Time::FFI::localtime($obj->epoch) : Time::FFI::gmtime($obj->epoch);
+  } else {
+    my $class = ref $obj;
+    Carp::croak "Cannot convert from unrecognized object class $class";
+  }
+}
+
 sub to_list {
   my ($self) = @_;
   return map { $self->$_ } @tm_members;
@@ -109,6 +120,7 @@ Time::FFI::tm - POSIX tm record structure
   my $epoch = POSIX::mktime($tm->to_list);
   my $epoch = $tm->epoch(1);
 
+  my $tm = Time::FFI::tm->from_object(Time::Moment->now, 1);
   my $datetime = $tm->to_object('DateTime', 1);
 
 =head1 DESCRIPTION
@@ -118,7 +130,8 @@ F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>. This
 is used by L<Time::FFI> to provide access to such structures.
 
 The structure does not store an explicit time zone, so you must specify whether
-to interpret it as local or UTC time whenever rendering it to an actual time.
+to interpret it as local or UTC time whenever rendering it to or from an actual
+date/time.
 
 =head1 ATTRIBUTES
 
@@ -161,15 +174,6 @@ read-only string.
 
 Construct a new B<Time::FFI::tm> object representing a C<tm> struct.
 
-=head2 epoch
-
-  my $epoch = $tm->epoch($islocal);
-
-Translate the time structure into a Unix epoch timestamp (seconds since
-1970-01-01 UTC). If a true value is passed, the timestamp will represent the
-time as interpreted in the local time zone; otherwise it will be interpreted as
-UTC.
-
 =head2 from_list
 
   my $tm = Time::FFI::tm->from_list($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst);
@@ -177,6 +181,17 @@ UTC.
 Construct a new B<Time::FFI::tm> object from the passed list of values, in the
 same order returned by L<perlfunc/localtime>. Missing or undefined values will
 be interpreted as the default of 0, but see L</ATTRIBUTES>.
+
+=head2 from_object
+
+  my $tm = Time::FFI::tm->from_object($obj, $islocal);
+
+Construct a new B<Time::FFI::tm> object from the passed datetime object, which
+may be any object that implements an C<epoch> method returning the Unix epoch
+timestamp. If a true value is passed as the second argument, the resulting
+structure will represent the local time at that instant; otherwise it will
+represent UTC. The original time zone and any fractional seconds will not be
+represented in the resulting structure.
 
 =head2 to_list
 
@@ -195,6 +210,15 @@ Return an object of the specified class. If a true value is passed as the
 second argument, the object will represent the time as interpreted in the local
 time zone; otherwise it will be interpreted as UTC. Currently L<Time::Piece>,
 L<Time::Moment>, and L<DateTime> (or subclasses) are recognized.
+
+=head2 epoch
+
+  my $epoch = $tm->epoch($islocal);
+
+Translate the time structure into a Unix epoch timestamp (seconds since
+1970-01-01 UTC). If a true value is passed, the timestamp will represent the
+time as interpreted in the local time zone; otherwise it will be interpreted as
+UTC.
 
 =head2 with_extra
 
