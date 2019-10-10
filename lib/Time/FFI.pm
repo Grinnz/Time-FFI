@@ -205,7 +205,7 @@ L<localtime_r(3)> function is used if available.
   my $epoch = mktime $tm;
 
 Returns the epoch timestamp representing the passed L<Time::FFI::tm> record
-interpreted in the local time zone. The time is interpreted from the L<tm_sec>,
+interpreted in the local time zone. The time is interpreted from the C<tm_sec>,
 C<tm_min>, C<tm_hour>, C<tm_mday>, C<tm_mon>, C<tm_year>, and C<tm_isdst>
 members of the record, ignoring the rest. DST status will be automatically
 determined if C<tm_isdst> is a negative value. The C<tm_isdst>, C<tm_wday>, and
