@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test2::V0;
-use Test::Needs 'Time::Piece';
+use Test::Needs {'Time::Piece' => '1.16'};
 use Time::FFI::tm;
 
 my $time = time;
