@@ -29,13 +29,40 @@ sub from_list {
 }
 
 sub from_object {
-  my ($class, $obj, $islocal) = @_;
-  if ($obj->isa('Time::FFI::tm') or $obj->isa('Time::tm')) {
+  my ($class, $obj) = @_;
+  if ($obj->isa('Time::Piece')) {
+    return $class->new(
+      year  => $obj->year - 1900,
+      mon   => $obj->mon - 1,
+      mday  => $obj->mday,
+      hour  => $obj->hour,
+      min   => $obj->min,
+      sec   => $obj->sec,
+      isdst => -1,
+    );
+  } elsif ($obj->isa('Time::Moment')) {
+    return $class->new(
+      year  => $obj->year - 1900,
+      mon   => $obj->month - 1,
+      mday  => $obj->day_of_month,
+      hour  => $obj->hour,
+      min   => $obj->minute,
+      sec   => $obj->second,
+      isdst => -1,
+    );
+  } elsif ($obj->isa('DateTime')) {
+    return $class->new(
+      year  => $obj->year - 1900,
+      mon   => $obj->month - 1,
+      mday  => $obj->day,
+      hour  => $obj->hour,
+      min   => $obj->minute,
+      sec   => $obj->second,
+      isdst => -1,
+    );
+  } elsif ($obj->isa('Time::FFI::tm') or $obj->isa('Time::tm')) {
     my %attr = map { ($_ => $obj->$_) } qw(sec min hour mday mon year wday yday isdst);
     return $class->new(\%attr);
-  } elsif ($obj->can('epoch')) {
-    require Time::FFI;
-    return $islocal ? Time::FFI::localtime($obj->epoch) : Time::FFI::gmtime($obj->epoch);
   } else {
     my $class = ref $obj;
     Carp::croak "Cannot convert from unrecognized object class $class";
@@ -92,12 +119,11 @@ sub epoch {
 sub normalized {
   my ($self, $islocal) = @_;
   my ($epoch, $new) = $self->_mktime($islocal);
-  if ($islocal) {
-    return $new;
-  } else {
+  if (!$islocal) {
     require Time::FFI;
-    return Time::FFI::gmtime($epoch);
+    $new = Time::FFI::gmtime($epoch);
   }
+  return bless $new, ref $self;
 }
 *with_extra = \&normalized;
 
@@ -146,7 +172,7 @@ Time::FFI::tm - POSIX tm record structure
   my $epoch = POSIX::mktime($tm->to_list);
   my $epoch = $tm->epoch(1);
 
-  my $tm = Time::FFI::tm->from_object(Time::Moment->now, 1);
+  my $tm = Time::FFI::tm->from_object(Time::Moment->now);
   my $datetime = $tm->to_object('DateTime', 1);
 
 =head1 DESCRIPTION
@@ -156,8 +182,8 @@ F<time.h> and used by functions such as L<mktime(3)> and L<strptime(3)>. This
 is used by L<Time::FFI> to provide access to such structures.
 
 The structure does not store an explicit time zone, so you must specify whether
-to interpret it as local or UTC time whenever rendering it to or from an actual
-date/time.
+to interpret it as local or UTC time whenever rendering it to an actual
+datetime.
 
 =head1 ATTRIBUTES
 
@@ -236,19 +262,15 @@ be interpreted as the default of 0, but see L</ATTRIBUTES>.
 
 =head2 from_object
 
-  my $tm = Time::FFI::tm->from_object($obj, $islocal);
+  my $tm = Time::FFI::tm->from_object($obj);
 
-I<Since version 1.001>
+I<Current API since version 2.000.>
 
-Construct a new B<Time::FFI::tm> object from the passed datetime object, which
-may be any object that implements an C<epoch> method returning the Unix epoch
-timestamp. If a true value is passed as the second argument, the resulting
-structure will represent the local time at that instant; otherwise it will
-represent UTC. The original time zone and any fractional seconds will not be
-represented in the resulting structure.
-
-A L<Time::tm> or L<Time::FFI::tm> record is also accepted, in which case the
-C<$islocal> argument is ignored and the record's values are copied.
+Construct a new B<Time::FFI::tm> object from the passed datetime object's local
+datetime components. Currently L<Time::Piece>, L<Time::Moment>, L<DateTime>,
+L<Time::tm>, and L<Time::FFI::tm> objects (and subclasses) are recognized. The
+original time zone and any fractional seconds will not be represented in the
+resulting structure.
 
 =head2 to_list
 
@@ -278,7 +300,7 @@ accepted; this is not currently supported for UTC times.
 
   my $epoch = $tm->epoch($islocal);
 
-I<Since version 1.000>
+I<Since version 1.000.>
 
 Translate the time structure into a Unix epoch timestamp (seconds since
 1970-01-01 UTC). If a true value is passed, the timestamp will represent the
@@ -292,7 +314,7 @@ accepted; this is not currently supported for UTC times.
 
   my $new = $tm->normalized($islocal);
 
-I<Since version 1.003>
+I<Since version 1.003.>
 
 Return a new B<Time::FFI::tm> object representing the same time, but with
 C<wday>, C<yday>, C<isdst>, and (if supported) C<gmtoff> and C<zone> set
@@ -324,4 +346,4 @@ This is free software, licensed under:
 
 L<Time::FFI>, L<Time::tm>
 
-=for Pod::Coverage with_extra
+=for Pod::Coverage with_extra tm_sec tm_min tm_hour tm_mday tm_mon tm_year tm_wday tm_yday tm_isdst tm_gmtoff tm_zone

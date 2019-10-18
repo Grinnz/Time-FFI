@@ -1,8 +1,12 @@
 {{$NEXT}}
-  - Renamed Time::FFI::tm members to remove superfluous tm_. Aliases with the
-    tm_ prefix remain.
-  - Allow Time::tm and Time::FFI::tm for from_object and to_object in
-    Time::FFI::tm.
+  - Reworked the from_object constructor for Time::FFI::tm to always create a
+    tm record based on the localtime attributes of the passed object. For the
+    previous absolute time behavior, retrieve an epoch timestamp from the
+    original object and pass it to localtime or gmtime to create a
+    Time::FFI::tm record.
+  - Renamed Time::FFI::tm attributes to remove superfluous tm_. Aliases with
+    the tm_ prefix remain.
+  - Allow Time::FFI::tm conversion to or from Time::tm and Time::FFI::tm.
 
 1.004     2019-10-10 18:27:29 EDT
   - Default tm_mday to 0 in strptime for consistency with other fields on

@@ -37,16 +37,16 @@ is [$tm->to_list], \@gmtime, 'tm struct to list';
 my $localtime_tm = Time::localtime::localtime $time;
 
 $tm = Time::FFI::tm->from_object($localtime_tm);
-is $tm, object { call $_ => $localtime_tm->$_ for @tm_members }, 'populated tm struct from Time::localtime';
+is $tm, object { call $_ => $localtime_tm->$_ for qw(sec min hour mday mon year) }, 'populated tm struct from Time::localtime';
 is $tm->epoch(1), $time, 'epoch from tm struct';
-is $tm->to_object('Time::tm'), object { call $_ => $localtime_tm->$_ for @tm_members }, 'Time::tm struct';
+is $tm->to_object('Time::tm'), object { call $_ => $tm->$_ for @tm_members }, 'Time::tm struct';
 
 my $gmtime_tm = Time::gmtime::gmtime $time;
 
 $tm = Time::FFI::tm->from_object($gmtime_tm);
-is $tm, object { call $_ => $gmtime_tm->$_ for @tm_members }, 'populated tm struct from Time::gmtime';
+is $tm, object { call $_ => $gmtime_tm->$_ for qw(sec min hour mday mon year) }, 'populated tm struct from Time::gmtime';
 is $tm->epoch(0), $time, 'epoch from tm struct';
-is $tm->to_object('Time::tm'), object { call $_ => $gmtime_tm->$_ for @tm_members }, 'Time::tm struct';
+is $tm->to_object('Time::tm'), object { call $_ => $tm->$_ for @tm_members }, 'Time::tm struct';
 
 $tm = Time::FFI::tm->new(
   year  => 119,

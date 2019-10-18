@@ -159,7 +159,7 @@ Time::FFI - libffi interface to POSIX date and time functions
   my $moment = $tm->to_object('Time::Moment', 0);
 
   use Time::FFI::tm;
-  my $tm = Time::FFI::tm->from_object(DateTime->now, 1);
+  my $tm = Time::FFI::tm->from_object(DateTime->now);
   my $epoch = $tm->epoch(1);
   my $piece = $tm->to_object('Time::Piece', 1);
 

@@ -22,7 +22,7 @@ is $local_tp, object {
   call yday  => $local_tm->yday;
   call epoch => $time;
 }, 'local Time::Piece object';
-my $local_from = Time::FFI::tm->from_object($local_tp, 1);
+my $local_from = Time::FFI::tm->from_object($local_tp);
 is $local_from, object {
   call sec   => $local_tm->sec;
   call min   => $local_tm->min;
@@ -30,9 +30,6 @@ is $local_from, object {
   call mday  => $local_tm->mday;
   call mon   => $local_tm->mon;
   call year  => $local_tm->year;
-  call wday  => $local_tm->wday;
-  call yday  => $local_tm->yday;
-  call isdst => $local_tm->isdst;
 }, 'local tm structure from Time::Piece object';
 is $local_from->epoch(1), $time, 'right epoch timestamp from local time';
 
@@ -50,7 +47,7 @@ is $utc_tp, object {
   call yday  => $utc_tm->yday;
   call epoch => $time;
 }, 'UTC Time::Piece object';
-my $utc_from = Time::FFI::tm->from_object($utc_tp, 0);
+my $utc_from = Time::FFI::tm->from_object($utc_tp);
 is $utc_from, object {
   call sec   => $utc_tm->sec;
   call min   => $utc_tm->min;
@@ -58,9 +55,6 @@ is $utc_from, object {
   call mday  => $utc_tm->mday;
   call mon   => $utc_tm->mon;
   call year  => $utc_tm->year;
-  call wday  => $utc_tm->wday;
-  call yday  => $utc_tm->yday;
-  call isdst => $utc_tm->isdst;
 }, 'UTC tm structure from Time::Piece object';
 is $utc_from->epoch(0), $time, 'right epoch timestamp from UTC time';
 
