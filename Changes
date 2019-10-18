@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+2.000     2019-10-18 18:26:15 EDT
   - Reworked the from_object constructor for Time::FFI::tm to always create a
     tm record based on the localtime attributes of the passed object. For the
     previous absolute time behavior, retrieve an epoch timestamp from the
