@@ -122,8 +122,9 @@ sub normalized {
   if (!$islocal) {
     require Time::FFI;
     $new = Time::FFI::gmtime($epoch);
+    bless $new, ref $self;
   }
-  return bless $new, ref $self;
+  return $new;
 }
 *with_extra = \&normalized;
 
@@ -290,11 +291,11 @@ second argument, the object will represent the time as interpreted in the local
 time zone; otherwise it will be interpreted as UTC. Currently L<Time::Piece>,
 L<Time::Moment>, and L<DateTime> (or subclasses) are recognized.
 
-You may also specify L<Time::tm> or L<Time::FFI::tm>, in which case the
-C<$islocal> parameter is ignored and the values are copied to a new record.
-
 When interpreted as a local time, values outside the standard ranges are
 accepted; this is not currently supported for UTC times.
+
+You may also specify L<Time::tm> or L<Time::FFI::tm> (or subclasses), in which
+case the C<$islocal> parameter is ignored and the values are copied as-is.
 
 =head2 epoch
 

@@ -7,6 +7,7 @@
   - Renamed Time::FFI::tm attributes to remove superfluous tm_. Aliases with
     the tm_ prefix remain.
   - Allow Time::FFI::tm conversion to or from Time::tm and Time::FFI::tm.
+  - Preserve class from invocant in Time::FFI::tm normalized method.
 
 1.004     2019-10-10 18:27:29 EDT
   - Default tm_mday to 0 in strptime for consistency with other fields on
