@@ -1,4 +1,8 @@
 {{$NEXT}}
+  - Renamed Time::FFI::tm members to remove superfluous tm_. Aliases with the
+    tm_ prefix remain.
+  - Allow Time::tm and Time::FFI::tm for from_object and to_object in
+    Time::FFI::tm.
 
 1.004     2019-10-10 18:27:29 EDT
   - Default tm_mday to 0 in strptime for consistency with other fields on

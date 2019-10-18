@@ -9,13 +9,18 @@ use Time::Local ();
 
 our $VERSION = '1.005';
 
-my @tm_members = qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year tm_wday tm_yday tm_isdst);
+my @tm_members = qw(sec min hour mday mon year wday yday isdst);
 
 FFI::Platypus::Record::record_layout(
   (map { (int => $_) } @tm_members),
-  long   => 'tm_gmtoff',
-  string => 'tm_zone',
+  long   => 'gmtoff',
+  string => 'zone',
 );
+
+{
+  no strict 'refs';
+  *{"tm_$_"} = \&$_ for @tm_members, 'gmtoff', 'zone';
+}
 
 sub from_list {
   my ($class, @args) = @_;
@@ -25,8 +30,11 @@ sub from_list {
 
 sub from_object {
   my ($class, $obj, $islocal) = @_;
-  require Time::FFI;
-  if ($obj->can('epoch')) {
+  if ($obj->isa('Time::FFI::tm') or $obj->isa('Time::tm')) {
+    my %attr = map { ($_ => $obj->$_) } qw(sec min hour mday mon year wday yday isdst);
+    return $class->new(\%attr);
+  } elsif ($obj->can('epoch')) {
+    require Time::FFI;
     return $islocal ? Time::FFI::localtime($obj->epoch) : Time::FFI::gmtime($obj->epoch);
   } else {
     my $class = ref $obj;
@@ -42,29 +50,34 @@ sub to_list {
 sub to_object {
   my ($self, $class, $islocal) = @_;
   Module::Runtime::require_module $class;
-  my ($epoch, $new) = $self->_mktime($islocal);
   if ($class->isa('Time::Piece')) {
+    my ($epoch, $new) = $self->_mktime($islocal);
     return $islocal ? scalar $class->localtime($epoch) : scalar $class->gmtime($epoch);
   } elsif ($class->isa('Time::Moment')) {
+    my ($epoch, $new) = $self->_mktime($islocal);
     my $moment = $class->new(
-      year   => $new->tm_year + 1900,
-      month  => $new->tm_mon + 1,
-      day    => $new->tm_mday,
-      hour   => $new->tm_hour,
-      minute => $new->tm_min,
-      second => $new->tm_sec,
+      year   => $new->year + 1900,
+      month  => $new->mon + 1,
+      day    => $new->mday,
+      hour   => $new->hour,
+      minute => $new->min,
+      second => $new->sec,
     );
     return $islocal ? $moment->with_offset_same_local(($moment->epoch - $epoch) / 60) : $moment;
   } elsif ($class->isa('DateTime')) {
+    my ($epoch, $new) = $self->_mktime($islocal);
     return $class->new(
-      year   => $new->tm_year + 1900,
-      month  => $new->tm_mon + 1,
-      day    => $new->tm_mday,
-      hour   => $new->tm_hour,
-      minute => $new->tm_min,
-      second => $new->tm_sec,
+      year   => $new->year + 1900,
+      month  => $new->mon + 1,
+      day    => $new->mday,
+      hour   => $new->hour,
+      minute => $new->min,
+      second => $new->sec,
       time_zone => $islocal ? 'local' : 'UTC',
     );
+  } elsif ($class->isa('Time::FFI::tm') or $class->isa('Time::tm')) {
+    my %attr = map { ($_ => $self->$_) } qw(sec min hour mday mon year wday yday isdst);
+    return $class->new(%attr);
   } else {
     Carp::croak "Cannot convert to unrecognized object class $class";
   }
@@ -92,14 +105,14 @@ sub _mktime {
   my ($self, $islocal) = @_;
   if ($islocal) {
     require Time::FFI;
-    my %attr = map { ($_ => $self->$_) } qw(tm_sec tm_min tm_hour tm_mday tm_mon tm_year);
-    $attr{tm_isdst} = -1;
+    my %attr = map { ($_ => $self->$_) } qw(sec min hour mday mon year);
+    $attr{isdst} = -1;
     my $new = (ref $self)->new(\%attr);
     return (Time::FFI::mktime($new), $new);
   } else {
-    my $year = $self->tm_year;
+    my $year = $self->year;
     $year += 1900 if $year >= 0; # avoid timegm year heuristic
-    my @vals = ((map { $self->$_ } qw(tm_sec tm_min tm_hour tm_mday tm_mon)), $year);
+    my @vals = ((map { $self->$_ } qw(sec min hour mday mon)), $year);
     return (scalar Time::Local::timegm(@vals), $self);
   }
 }
@@ -115,18 +128,18 @@ Time::FFI::tm - POSIX tm record structure
   use Time::FFI::tm;
 
   my $tm = Time::FFI::tm->new(
-    tm_year  => 95, # years since 1900
-    tm_mon   => 0,  # 0 == January
-    tm_mday  => 1,
-    tm_hour  => 13,
-    tm_min   => 25,
-    tm_sec   => 59,
-    tm_isdst => -1, # allow DST status to be determined by the system
+    year  => 95, # years since 1900
+    mon   => 0,  # 0 == January
+    mday  => 1,
+    hour  => 13,
+    min   => 25,
+    sec   => 59,
+    isdst => -1, # allow DST status to be determined by the system
   );
-  $tm->tm_mday($tm->tm_mday + 1); # add a day
+  $tm->mday($tm->mday + 1); # add a day
 
   my $in_local = $tm->normalized(1);
-  say $in_local->tm_isdst; # now knows if DST is active
+  say $in_local->isdst; # now knows if DST is active
 
   my $tm = Time::FFI::tm->from_list(CORE::localtime(time));
 
@@ -149,52 +162,57 @@ date/time.
 =head1 ATTRIBUTES
 
 The integer components of the C<tm> struct are stored as settable attributes
-that default to 0. Note that 0 is out of the standard range for the C<tm_mday>
-value (often indicating the last day of the previous month), and C<tm_isdst>
-should be set to a negative value if unknown, so these values should always be
-specified explicitly.
+that default to 0.
 
-=head2 tm_sec
+Note that 0 is out of the standard range for the C<mday> value (often
+indicating the last day of the previous month), and C<isdst> should be set to a
+negative value if unknown, so these values should always be specified
+explicitly.
+
+Each attribute also has a corresponding alias starting with C<tm_> to match the
+standard C<tm> struct member names.
+
+=head2 sec
 
 Seconds [0,60].
 
-=head2 tm_min
+=head2 min
 
 Minutes [0,59].
 
-=head2 tm_hour
+=head2 hour
 
 Hour [0,23].
 
-=head2 tm_mday
+=head2 mday
 
 Day of month [1,31].
 
-=head2 tm_mon
+=head2 mon
 
 Month of year [0,11].
 
-=head2 tm_year
+=head2 year
 
 Years since 1900.
 
-=head2 tm_wday
+=head2 wday
 
 Day of week [0,6] (Sunday =0).
 
-=head2 tm_yday
+=head2 yday
 
 Day of year [0,365].
 
-=head2 tm_isdst
+=head2 isdst
 
 Daylight Savings flag. (0: off, positive: on, negative: unknown)
 
-=head2 tm_gmtoff
+=head2 gmtoff
 
 Seconds east of UTC. (May not be available on all systems)
 
-=head2 tm_zone
+=head2 zone
 
 Timezone abbreviation. (Read only string, may not be available on all systems)
 
@@ -203,8 +221,8 @@ Timezone abbreviation. (Read only string, may not be available on all systems)
 =head2 new
 
   my $tm = Time::FFI::tm->new;
-  my $tm = Time::FFI::tm->new(tm_year => $year, ...);
-  my $tm = Time::FFI::tm->new({tm_year => $year, ...});
+  my $tm = Time::FFI::tm->new(year => $year, ...);
+  my $tm = Time::FFI::tm->new({year => $year, ...});
 
 Construct a new B<Time::FFI::tm> object representing a C<tm> struct.
 
@@ -229,6 +247,9 @@ structure will represent the local time at that instant; otherwise it will
 represent UTC. The original time zone and any fractional seconds will not be
 represented in the resulting structure.
 
+A L<Time::tm> or L<Time::FFI::tm> record is also accepted, in which case the
+C<$islocal> argument is ignored and the record's values are copied.
+
 =head2 to_list
 
   my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = $tm->to_list;
@@ -246,6 +267,9 @@ Return an object of the specified class. If a true value is passed as the
 second argument, the object will represent the time as interpreted in the local
 time zone; otherwise it will be interpreted as UTC. Currently L<Time::Piece>,
 L<Time::Moment>, and L<DateTime> (or subclasses) are recognized.
+
+You may also specify L<Time::tm> or L<Time::FFI::tm>, in which case the
+C<$islocal> parameter is ignored and the values are copied to a new record.
 
 When interpreted as a local time, values outside the standard ranges are
 accepted; this is not currently supported for UTC times.
@@ -271,11 +295,11 @@ accepted; this is not currently supported for UTC times.
 I<Since version 1.003>
 
 Return a new B<Time::FFI::tm> object representing the same time, but with
-C<tm_wday>, C<tm_yday>, C<tm_isdst>, and (if supported) C<tm_gmtoff> and
-C<tm_zone> set appropriately. If a true value is passed, these values will be
-set according to the time as interpreted in the local time zone; otherwise they
-will be set according to the time as interpreted in UTC. Note that this does
-not replace the need to pass C<$islocal> for future conversions.
+C<wday>, C<yday>, C<isdst>, and (if supported) C<gmtoff> and C<zone> set
+appropriately. If a true value is passed, these values will be set according to
+the time as interpreted in the local time zone; otherwise they will be set
+according to the time as interpreted in UTC. Note that this does not replace
+the need to pass C<$islocal> for future conversions.
 
 When interpreted as a local time, values outside the standard ranges will also
 be normalized; this is not currently supported for UTC times.
@@ -298,6 +322,6 @@ This is free software, licensed under:
 
 =head1 SEE ALSO
 
-L<Time::FFI>
+L<Time::FFI>, L<Time::tm>
 
 =for Pod::Coverage with_extra
