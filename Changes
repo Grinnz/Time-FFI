@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Convert to use FFI::Platypus type parser version 1, no functional changes.
 
 2.000     2019-10-18 18:26:15 EDT
   - Reworked the from_object constructor for Time::FFI::tm to always create a
