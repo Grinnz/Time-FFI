@@ -44,7 +44,7 @@
          "requires" : {
             "Carp" : "0",
             "Exporter" : "5.57",
-            "FFI::Platypus" : "0",
+            "FFI::Platypus" : "1.00",
             "Module::Runtime" : "0",
             "Time::Local" : "0",
             "perl" : "5.008001"
@@ -66,11 +66,11 @@
    "provides" : {
       "Time::FFI" : {
          "file" : "lib/Time/FFI.pm",
-         "version" : "2.000"
+         "version" : "2.001"
       },
       "Time::FFI::tm" : {
          "file" : "lib/Time/FFI/tm.pm",
-         "version" : "2.000"
+         "version" : "2.001"
       }
    },
    "release_status" : "stable",
@@ -85,7 +85,7 @@
          "web" : "https://github.com/Grinnz/Time-FFI"
       }
    },
-   "version" : "2.000",
+   "version" : "2.001",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.030000"
@@ -274,7 +274,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "2.000",
+                  "tag" : "2.001",
                   "tag_format" : "%v",
                   "tag_message" : "%v"
                },
