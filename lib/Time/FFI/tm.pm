@@ -301,9 +301,10 @@ Construct a new B<Time::FFI::tm> object representing a C<tm> struct.
 
   my $tm = Time::FFI::tm->from_list($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst);
 
-Construct a new B<Time::FFI::tm> object from the passed list of values, in the
-same order returned by L<perlfunc/localtime>. Missing or undefined values will
-be interpreted as the default of 0, but see L</ATTRIBUTES>.
+Construct a new B<Time::FFI::tm> object from the passed list of time
+attributes, in the same order returned by L<perlfunc/localtime>. Missing or
+undefined values will be interpreted as the default of 0, but see
+L</ATTRIBUTES>.
 
 =head2 from_object
 
@@ -321,8 +322,8 @@ resulting structure.
 
   my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = $tm->to_list;
 
-Return the list of values in the structure, in the same order returned by
-L<perlfunc/localtime>.
+Return the list of time attributes in the structure, in the same order returned
+by L<perlfunc/localtime>.
 
 =head2 to_object_as_local
 
