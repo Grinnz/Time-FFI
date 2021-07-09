@@ -93,28 +93,31 @@ sub _to_object {
   my ($self, $class, $islocal) = @_;
   Module::Runtime::require_module $class;
   if ($class->isa('Time::Piece')) {
-    my ($epoch, $new) = _mktime($self, $islocal);
+    my ($epoch) = $islocal ? _mktime($self) : _timegm($self);
     return $islocal ? scalar $class->localtime($epoch) : scalar $class->gmtime($epoch);
   } elsif ($class->isa('Time::Moment')) {
-    my ($epoch, $new) = _mktime($self, $islocal);
+    my $tm = $self;
+    my $epoch;
+    ($epoch, $tm) = _mktime($self) if $islocal;
     my $moment = $class->new(
-      year   => $new->year + 1900,
-      month  => $new->mon + 1,
-      day    => $new->mday,
-      hour   => $new->hour,
-      minute => $new->min,
-      second => $new->sec,
+      year   => $tm->year + 1900,
+      month  => $tm->mon + 1,
+      day    => $tm->mday,
+      hour   => $tm->hour,
+      minute => $tm->min,
+      second => $tm->sec,
     );
     return $islocal ? $moment->with_offset_same_local(($moment->epoch - $epoch) / 60) : $moment;
   } elsif ($class->isa('DateTime')) {
-    my ($epoch, $new) = _mktime($self, $islocal);
+    my $tm = $self;
+    (undef, $tm) = _mktime($self) if $islocal;
     return $class->new(
-      year   => $new->year + 1900,
-      month  => $new->mon + 1,
-      day    => $new->mday,
-      hour   => $new->hour,
-      minute => $new->min,
-      second => $new->sec,
+      year   => $tm->year + 1900,
+      month  => $tm->mon + 1,
+      day    => $tm->mday,
+      hour   => $tm->hour,
+      minute => $tm->min,
+      second => $tm->sec,
       time_zone => $islocal ? 'local' : 'UTC',
     );
   } elsif ($class->isa('Time::FFI::tm') or $class->isa('Time::tm')) {
@@ -128,44 +131,38 @@ sub _to_object {
 sub epoch {
   my ($self, $islocal) = @_;
   Carp::carp '->epoch is deprecated; use ->epoch_as_local or ->epoch_as_utc';
-  my ($epoch, $new) = _mktime($self, $islocal);
+  my ($epoch) = $islocal ? _mktime($self) : _timegm($self);
   return $epoch;
 }
 
 sub epoch_as_local {
   my ($self) = @_;
-  my ($epoch) = _mktime($self, 1);
+  my ($epoch) = _mktime($self);
   return $epoch;
 }
 
 sub epoch_as_utc {
   my ($self) = @_;
-  my ($epoch) = _mktime($self, 0);
+  my ($epoch) = _timegm($self);
   return $epoch;
 }
 
 sub normalized {
   my ($self, $islocal) = @_;
   Carp::carp '->normalized is deprecated; use ->normalized_as_local or ->normalized_as_utc';
-  my ($epoch, $new) = _mktime($self, $islocal);
-  if (!$islocal) {
-    require Time::FFI;
-    $new = Time::FFI::gmtime($epoch);
-    bless $new, ref $self;
-  }
-  return $new;
+  return $islocal ? $self->normalized_as_local : $self->normalized_as_utc;
 }
 *with_extra = \&normalized;
 
 sub normalized_as_local {
   my ($self) = @_;
-  my ($epoch, $new) = _mktime($self, 1);
+  my (undef, $new) = _mktime($self);
   return $new;
 }
 
 sub normalized_as_utc {
   my ($self) = @_;
-  my ($epoch) = _mktime($self, 0);
+  my ($epoch) = _timegm($self);
   require Time::FFI;
   my $new = Time::FFI::gmtime($epoch);
   bless $new, ref $self;
@@ -173,19 +170,20 @@ sub normalized_as_utc {
 }
 
 sub _mktime {
-  my ($self, $islocal) = @_;
-  if ($islocal) {
-    require Time::FFI;
-    my %attr = map { ($_ => $self->$_) } qw(sec min hour mday mon year);
-    $attr{isdst} = -1;
-    my $new = (ref $self)->new(\%attr);
-    return (Time::FFI::mktime($new), $new);
-  } else {
-    my $year = $self->year;
-    $year += 1900 if $year >= 0; # avoid timegm year heuristic
-    my @vals = ((map { $self->$_ } qw(sec min hour mday mon)), $year);
-    return (scalar Time::Local::timegm(@vals), $self);
-  }
+  my ($self) = @_;
+  require Time::FFI;
+  my %attr = map { ($_ => $self->$_) } qw(sec min hour mday mon year);
+  $attr{isdst} = -1;
+  my $new = (ref $self)->new(\%attr);
+  return (Time::FFI::mktime($new), $new);
+}
+
+sub _timegm {
+  my ($self) = @_;
+  my $year = $self->year;
+  $year += 1900 if $year >= 0; # avoid timegm year heuristic
+  my @vals = ((map { $self->$_ } qw(sec min hour mday mon)), $year);
+  return scalar Time::Local::timegm(@vals);
 }
 
 1;
