@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+2.002     2021-07-09 02:56:26 EDT
   - Added to_object_as_local, to_object_as_utc, epoch_as_local, epoch_as_utc,
     normalized_as_local, and normalized_as_utc methods to Time::FFI::tm.
   - Deprecated to_object, epoch, and normalized methods for Time::FFI::tm.
